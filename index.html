@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>البعد بين نقطتين ومعادلة الدائرة</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --maroon:#8a1538; --maroon-d:#6b0f2b; --maroon-l:#f6e8ed;
+  --ink:#241a20; --mute:#6b6168; --bg:#faf6f7; --card:#fff; --line:#e6dde1;
+  --orange:#e8710a; --green:#0f8a6d; --blue:#0b7ac7; --purple:#7b2cbf;
+  --good:#0f8a4a; --bad:#c62828;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Tajawal,"Segoe UI",Tahoma,sans-serif;font-size:18px;line-height:1.7}
+header{background:var(--maroon);color:#fff;padding:18px 16px 14px;text-align:center;border-bottom:5px solid var(--maroon-d)}
+header h1{margin:0;font-size:clamp(22px,3.6vw,34px);font-weight:800}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:14px 12px 4px;max-width:1200px;margin:auto}
+nav button{font:inherit;font-weight:700;border:2px solid var(--maroon);background:#fff;color:var(--maroon);padding:6px 18px;border-radius:999px;cursor:pointer}
+nav button[aria-selected=true]{background:var(--maroon);color:#fff}
+main{max-width:1200px;margin:auto;padding:10px 14px 40px}
+section{display:none}
+section.on{display:block}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.card h2{margin:0 0 6px;font-size:22px;color:var(--maroon)}
+.card h3{margin:0 0 6px;font-size:19px;color:var(--maroon)}
+.lead{color:var(--mute);margin:0 0 6px}
+canvas{display:block;width:100%;height:auto;aspect-ratio:1/1;background:#fff;border:2px solid var(--line);border-radius:12px;touch-action:none;cursor:grab}
+.m{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:1.18em;direction:ltr;unicode-bidi:isolate;display:inline-block}
+.mline{direction:ltr;text-align:center;font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:1.35em;margin:4px 0;unicode-bidi:isolate}
+.rt .ov{border-top:2px solid currentColor;padding:0 3px;margin-left:1px}
+.big{background:var(--maroon-l);border:2px solid var(--maroon);border-radius:12px;padding:8px;text-align:center;color:var(--maroon-d);font-size:1.25em}
+ol.steps{margin:8px 0 0;padding-inline-start:26px}
+ol.steps li{margin:8px 0;padding:6px 8px;background:#fdfafb;border-inline-start:4px solid var(--maroon);border-radius:6px;animation:in .3s}
+ol.steps li.hint{list-style:none;border-color:var(--line);color:var(--mute);margin-inline-start:-26px}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+button.b{font:inherit;font-weight:700;border:0;background:var(--maroon);color:#fff;padding:6px 16px;border-radius:10px;cursor:pointer}
+button.b.alt{background:#fff;color:var(--maroon);border:2px solid var(--maroon)}
+button.b.tog[aria-pressed=true]{outline:3px solid #f0b6c6}
+label.chk{display:inline-flex;gap:6px;align-items:center;color:var(--mute);font-size:16px;cursor:pointer}
+.sl{display:grid;grid-template-columns:70px 1fr 60px;gap:8px;align-items:center;margin:4px 0}
+.sl input{width:100%;accent-color:var(--maroon)}
+.sl output{text-align:center;font-weight:700;direction:ltr}
+.opts{display:grid;gap:8px;margin:8px 0}
+button.opt{font:inherit;text-align:start;background:#fff;border:2px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer;color:var(--ink)}
+button.opt:hover:not(:disabled){border-color:var(--maroon)}
+button.opt:disabled{cursor:default;opacity:1}
+button.opt.right{border-color:var(--good);background:#e8f6ee}
+button.opt.wrong{border-color:var(--bad);background:#fdeaea}
+.fb{margin-top:6px;padding:0;border-radius:8px}
+.fb.good,.fb.bad{padding:8px 10px}
+.fb.good{background:#e8f6ee;color:#0a5c30}
+.fb.bad{background:#fdeaea;color:#8e1c1c}
+.tag{display:inline-block;padding:0 8px;border-radius:6px;color:#fff;font-weight:700;font-size:15px}
+.score{float:left;font-weight:700;color:var(--maroon)}
+.calc{border-inline-start:5px solid;padding:6px 10px;margin:8px 0;background:#fdfafb;border-radius:6px}
+footer{text-align:center;color:var(--mute);font-size:14px;padding:0 0 24px}
+</style>
+</head>
+<body>
+<header>
+  <h1>معادلة الدائرة في المستوى الإحداثي</h1>
+  <p>المسافة بين نقطتين ← الصيغة القياسية لمعادلة الدائرة</p>
+</header>
+
+<nav role="tablist">
+  <button role="tab" aria-selected="true" data-t="0">١. المسافة بين نقطتين</button>
+  <button role="tab" aria-selected="false" data-t="1">٢. نشاط: كرة الهدف</button>
+  <button role="tab" aria-selected="false" data-t="2">٣. اشتقاق معادلة الدائرة</button>
+  <button role="tab" aria-selected="false" data-t="3">٤. تدرّب</button>
+</nav>
+
+<main>
+
+<!-- ============ 1 ============ -->
+<section class="on" id="s0">
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>ما صيغة المسافة بين نقطتين؟</h2>
+        <p class="lead">اسحب النقطتين <span class="tag" style="background:var(--orange)">A</span> و <span class="tag" style="background:var(--purple)">B</span> على المستوى وشاهد المثلث القائم يتغيّر. المسافة بين النقطتين هي <b>وتر</b> هذا المثلث، ونحسبها بنظرية فيثاغورس.</p>
+        <div class="big"><span class="m">d = <span class="rt">√<span class="ov">(x₂ − x₁)² + (y₂ − y₁)²</span></span></span></div>
+        <div style="margin-top:8px">
+          <label class="chk"><input type="checkbox" id="snap1" checked> السحب إلى أعداد صحيحة (إلغاء الخيار يسمح بمنزلة عشرية)</label>
+        </div>
+      </div>
+      <div class="card">
+        <h3>الحل خطوة بخطوة</h3>
+        <div class="btns">
+          <button class="b" id="n1">الخطوة التالية ◀</button>
+          <button class="b alt" id="a1">إظهار الكل</button>
+          <button class="b alt" id="r1">إخفاء</button>
+        </div>
+        <ol class="steps" id="st1"></ol>
+      </div>
+    </div>
+    <div><canvas id="c1"></canvas></div>
+  </div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section id="s1">
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>استكشف وبرّر منطقياً</h2>
+        <p class="lead">يلعب حمزة وعثمان البولينج العشبي، ويحاول كل لاعب أن يرمي كرته لتصل إلى أقرب مسافة من كرة الهدف. المستوى الإحداثي يمثّل مواقع الكرات (الوحدة: قدم).</p>
+        <p>اضغط على الكرات لحساب بُعد كل منها عن كرة الهدف <span class="m">(1 , 2)</span>:</p>
+        <div class="btns">
+          <button class="b tog" aria-pressed="false" data-p="h1" style="background:var(--orange)">كرة حمزة الأولى</button>
+          <button class="b tog" aria-pressed="false" data-p="o" style="background:var(--purple)">كرة عثمان</button>
+          <button class="b tog" aria-pressed="false" data-p="h2" style="background:#c2185b">كرة حمزة الثانية</button>
+        </div>
+        <div id="calc2"></div>
+      </div>
+      <div class="card">
+        <h3>أ) اكتشف الخطأ</h3>
+        <p>حسب عثمان بُعد كرته عن الهدف هكذا:</p>
+        <div class="mline"><span class="rt">√<span class="ov">(1 − (−1))²</span></span> + <span class="rt">√<span class="ov">(2 − 0)²</span></span> = 2 + 2 = 4</div>
+        <p>هل حسابه صحيح؟ وإن لم يكن، فما الخطأ؟</p>
+        <div class="opts" id="o2a"></div><div class="fb" id="f2a"></div>
+      </div>
+      <div class="card">
+        <h3>ب) فكّر وبرّر</h3>
+        <p>رمى حمزة كرته الثانية فوقفت عند النقطة <span class="m">(−2 , 1)</span>. هل ما زال عثمان متقدّماً على حمزة؟</p>
+        <div class="opts" id="o2b"></div><div class="fb" id="f2b"></div>
+      </div>
+    </div>
+    <div><canvas id="c2"></canvas></div>
+  </div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section id="s2">
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>ما تعريف الدائرة؟</h2>
+        <p class="lead">الدائرة هي مجموعة نقاط المستوى التي تبعد بعداً ثابتاً عن نقطة ثابتة في المستوى. تُسمّى هذه النقطة <b style="color:var(--maroon)">مركز الدائرة</b>، ويُسمّى البعد الثابت <b style="color:var(--maroon)">نصف القطر</b>.</p>
+        <div class="sl"><span>h (س)</span><input type="range" id="h" min="-6" max="6" step="1" value="2"><output id="ho"></output></div>
+        <div class="sl"><span>k (ص)</span><input type="range" id="k" min="-6" max="6" step="1" value="-1"><output id="ko"></output></div>
+        <div class="sl"><span>r</span><input type="range" id="r" min="0.5" max="5" step="0.1" value="3"><output id="ro"></output></div>
+        <div class="btns">
+          <button class="b alt" data-pre="2,-1,3">مثال 1</button>
+          <button class="b alt" data-pre="0,0,1.8">حاول 1 (أ): المركز الأصل</button>
+          <button class="b alt" data-pre="-4,5,1.8">حاول 1 (ب): المركز (−4 , 5)</button>
+        </div>
+        <div class="big" id="eq3"></div>
+      </div>
+      <div class="card">
+        <h3>كيف نشتق المعادلة؟</h3>
+        <div class="btns">
+          <button class="b" id="n3">الخطوة التالية ◀</button>
+          <button class="b alt" id="a3">إظهار الكل</button>
+          <button class="b alt" id="r3">إخفاء</button>
+        </div>
+        <ol class="steps" id="st3"></ol>
+      </div>
+      <div class="card">
+        <h3>جرّب بنفسك</h3>
+        <p style="margin:0 0 6px"><span class="tag" style="background:var(--maroon)">P</span> نقطة على الدائرة (اسحبها حولها): تحقّق من أن بُعدها عن المركز يساوي دائماً r.</p>
+        <div id="p3" class="calc" style="border-color:var(--maroon)"></div>
+        <p style="margin:10px 0 6px"><span class="tag" style="background:var(--green)">Q</span> نقطة حرّة (اسحبها إلى أي موضع): هل هي داخل الدائرة أم عليها أم خارجها؟</p>
+        <div id="q3" class="calc" style="border-color:var(--green)"></div>
+      </div>
+    </div>
+    <div><canvas id="c3"></canvas></div>
+  </div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section id="s3">
+  <div class="grid">
+    <div>
+      <div class="card">
+        <span class="score" id="score4"></span>
+        <h2>تدرّب</h2>
+        <p class="lead" id="q4t"></p>
+        <div class="mline" id="q4m"></div>
+        <div class="opts" id="o4"></div>
+        <div class="fb" id="f4"></div>
+        <div class="btns"><button class="b" id="nq4">سؤال جديد ◀</button></div>
+      </div>
+    </div>
+    <div><canvas id="c4"></canvas></div>
+  </div>
+</section>
+
+</main>
+<footer>صفحة تفاعلية لشرح الدرس · اسحب النقاط وجرّب</footer>
+
+<script>
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const MIN='−';
+const num=v=>{let r=Math.round(v*100)/100;if(Object.is(r,-0))r=0;return String(r).replace('-',MIN)};
+const par=v=>v<0?`(${num(v)})`:num(v);
+const rt=s=>`<span class="rt">√<span class="ov">${s}</span></span>`;
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const r1=v=>Math.round(v*10)/10;
+const isSq=n=>Math.abs(Math.sqrt(n)-Math.round(Math.sqrt(n)))<1e-9;
+const sq=(v,h)=>h===0?`${v}²`:`(${v} ${h>0?'−':'+'} ${num(Math.abs(h))})²`;
+const eqHTML=(h,k,rhs)=>`<span class="m">${sq('x',h)} + ${sq('y',k)} = ${rhs}</span>`;
+
+class Plane{
+  constructor(cv,min,max){
+    this.cv=cv;this.ctx=cv.getContext('2d');this.min=min;this.max=max;this.S=0;this.draw=()=>{};
+    new ResizeObserver(()=>this.resize()).observe(cv);
+  }
+  resize(){
+    const w=this.cv.clientWidth;if(!w)return;
+    const d=window.devicePixelRatio||1;
+    this.S=w;this.cv.width=Math.round(w*d);this.cv.height=Math.round(w*d);
+    this.ctx.setTransform(d,0,0,d,0,0);this.render();
+  }
+  get u(){return this.S/(this.max-this.min)}
+  get fs(){return Math.max(13,this.S/34)}
+  X(x){return (x-this.min)*this.u}
+  Y(y){return this.S-(y-this.min)*this.u}
+  ix(px){return this.min+px/this.u}
+  iy(py){return this.min+(this.S-py)/this.u}
+  render(){
+    if(!this.S)return;
+    const c=this.ctx;c.direction='ltr';c.clearRect(0,0,this.S,this.S);
+    c.fillStyle='#fff';c.fillRect(0,0,this.S,this.S);
+    const step=(this.max-this.min)>12?2:1;
+    for(let i=Math.ceil(this.min);i<=this.max;i++){
+      c.strokeStyle=i===0?'#333':'#e6dde1';c.lineWidth=i===0?2:1;
+      c.beginPath();c.moveTo(this.X(i),0);c.lineTo(this.X(i),this.S);c.stroke();
+      c.beginPath();c.moveTo(0,this.Y(i));c.lineTo(this.S,this.Y(i));c.stroke();
+    }
+    c.fillStyle='#7a7078';c.font=`${Math.max(10,this.S/44)}px Tajawal,sans-serif`;
+    for(let i=Math.ceil(this.min);i<=this.max;i++){
+      if(i===0||i%step)continue;
+      c.textAlign='center';c.textBaseline='top';c.fillText(num(i),this.X(i),this.Y(0)+4);
+      c.textAlign='right';c.textBaseline='middle';c.fillText(num(i),this.X(0)-5,this.Y(i));
+    }
+    c.fillStyle='#333';c.font=`italic 700 ${this.fs}px "Times New Roman",serif`;
+    c.textAlign='left';c.textBaseline='bottom';c.fillText('x',this.S-16,this.Y(0)-5);
+    c.textAlign='left';c.textBaseline='top';c.fillText('y',this.X(0)+7,4);
+    this.draw(this);
+  }
+}
+function line(p,x1,y1,x2,y2,col,w=2,dash=null){
+  const c=p.ctx;c.strokeStyle=col;c.lineWidth=w;c.setLineDash(dash||[]);
+  c.beginPath();c.moveTo(p.X(x1),p.Y(y1));c.lineTo(p.X(x2),p.Y(y2));c.stroke();c.setLineDash([]);
+}
+function dot(p,x,y,col,r){
+  const c=p.ctx;r=r||Math.max(6,p.S/70);
+  c.fillStyle='#fff';c.beginPath();c.arc(p.X(x),p.Y(y),r+2,0,7);c.fill();
+  c.fillStyle=col;c.beginPath();c.arc(p.X(x),p.Y(y),r,0,7);c.fill();
+}
+function txt(p,s,x,y,col,align){
+  const c=p.ctx;c.font=`700 ${p.fs}px Tajawal,sans-serif`;c.textAlign=align||'center';c.textBaseline='middle';
+  c.lineJoin='round';c.lineWidth=4;c.strokeStyle='rgba(255,255,255,.92)';c.strokeText(s,x,y);
+  c.fillStyle=col||'#222';c.fillText(s,x,y);
+}
+function drag(p,pts,onMove){
+  let cur=null;
+  const pos=e=>{const r=p.cv.getBoundingClientRect();return [(e.clientX-r.left)*p.S/r.width,(e.clientY-r.top)*p.S/r.height]};
+  p.cv.addEventListener('pointerdown',e=>{
+    const [px,py]=pos(e);let best=null,bd=30;
+    for(const q of pts()){const d=Math.hypot(p.X(q.x)-px,p.Y(q.y)-py);if(d<bd){bd=d;best=q}}
+    if(best){cur=best;p.cv.setPointerCapture(e.pointerId);e.preventDefault()}
+  });
+  p.cv.addEventListener('pointermove',e=>{if(!cur)return;const [px,py]=pos(e);onMove(cur,p.ix(px),p.iy(py));p.render()});
+  const end=()=>{cur=null};
+  p.cv.addEventListener('pointerup',end);p.cv.addEventListener('pointercancel',end);
+}
+function Stepper(ol,getItems,btn,onChange){
+  let shown=0;
+  const render=()=>{
+    const it=getItems();
+    ol.innerHTML=shown?it.slice(0,shown).map(x=>`<li>${x}</li>`).join(''):'<li class="hint">اضغط «الخطوة التالية» لبدء الحل</li>';
+    onChange&&onChange();
+  };
+  btn.next.onclick=()=>{shown=Math.min(shown+1,getItems().length);render()};
+  btn.all.onclick=()=>{shown=getItems().length;render()};
+  btn.reset.onclick=()=>{shown=0;render()};
+  return {render,get shown(){return shown}};
+}
+function choices(box,opts,fb,after){
+  box.innerHTML='';fb.className='fb';fb.innerHTML='';let done=false;
+  opts.forEach(o=>{
+    const b=document.createElement('button');b.className='opt';b.innerHTML=o.html;
+    b.onclick=()=>{
+      if(done)return;done=true;
+      [...box.children].forEach((x,i)=>{x.disabled=true;if(opts[i].ok)x.classList.add('right')});
+      if(!o.ok)b.classList.add('wrong');
+      fb.className='fb '+(o.ok?'good':'bad');
+      fb.innerHTML=(o.ok?'✔ أحسنت! ':'✘ ليست صحيحة. ')+(o.why||'');
+      after&&after(o.ok);
+    };
+    box.appendChild(b);
+  });
+}
+
+/* ---------- tabs ---------- */
+const planes=[];
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  document.querySelectorAll('section').forEach((s,i)=>s.classList.toggle('on',i==b.dataset.t));
+  requestAnimationFrame(()=>planes[b.dataset.t].resize());
+});
+
+/* ================= 1: distance ================= */
+const A={x:-4,y:-2,n:'A',col:'#e8710a'},B={x:3,y:4,n:'B',col:'#7b2cbf'};
+const p1=new Plane($('#c1'),-8,8);planes[0]=p1;
+function d1(){
+  const dx=r1(B.x-A.x),dy=r1(B.y-A.y),n=Math.round((dx*dx+dy*dy)*100)/100;
+  return {dx,dy,n,d:Math.sqrt(n)};
+}
+const st1=Stepper($('#st1'),()=>{
+  const {dx,dy,n,d}=d1();
+  const res=n===0?'d = 0':isSq(n)?`d = ${rt(num(n))} = ${num(d)}`:`d = ${rt(num(n))} ≈ ${num(d)}`;
+  return [
+    `نحدّد إحداثيات النقطتين: <span class="m">A(${num(A.x)} , ${num(A.y)})</span> و <span class="m">B(${num(B.x)} , ${num(B.y)})</span>.`,
+    `نرسم مثلثاً قائماً وتره <span class="m">AB</span>. طول ضلعه الأفقي <span class="m">|x₂ − x₁| = |${num(B.x)} − ${par(A.x)}| = ${num(Math.abs(dx))}</span> وطول ضلعه الرأسي <span class="m">|y₂ − y₁| = |${num(B.y)} − ${par(A.y)}| = ${num(Math.abs(dy))}</span>.`,
+    `نطبّق نظرية فيثاغورس على المثلث القائم:<div class="mline">d² = (x₂ − x₁)² + (y₂ − y₁)²</div>`,
+    `نعوّض:<div class="mline">d = ${rt(`(${num(B.x)} − ${par(A.x)})² + (${num(B.y)} − ${par(A.y)})²`)}</div>`,
+    `نحسب:<div class="mline">d = ${rt(`${par(dx)}² + ${par(dy)}²`)} = ${rt(`${num(dx*dx)} + ${num(dy*dy)}`)} = ${rt(num(n))}</div><div class="big">${res}</div>`
+  ];
+},{next:$('#n1'),all:$('#a1'),reset:$('#r1')},()=>p1.render());
+p1.draw=p=>{
+  const {dx,dy,n,d}=d1(),cx=B.x,cy=A.y,c=p.ctx,u=p.u;
+  line(p,A.x,A.y,cx,cy,'#e8710a',3,[8,6]);
+  line(p,cx,cy,B.x,B.y,'#0f8a6d',3,[8,6]);
+  if(dx!==0&&dy!==0){
+    const sx=Math.sign(A.x-cx),sy=Math.sign(B.y-cy),s=0.5;
+    c.strokeStyle='#555';c.lineWidth=2;c.beginPath();
+    c.moveTo(p.X(cx+sx*s),p.Y(cy));c.lineTo(p.X(cx+sx*s),p.Y(cy+sy*s));c.lineTo(p.X(cx),p.Y(cy+sy*s));c.stroke();
+  }
+  line(p,A.x,A.y,B.x,B.y,'#8a1538',4);
+  if(st1.shown>=2){
+    if(dx!==0)txt(p,num(Math.abs(dx)),p.X((A.x+cx)/2),p.Y(cy)+(B.y>=cy?1:-1)*(-1)*p.fs*1.3,'#b85400');
+    if(dy!==0)txt(p,num(Math.abs(dy)),p.X(cx)+(A.x<=cx?1:-1)*p.fs*1.3,p.Y((cy+B.y)/2),'#0a6b54');
+  }
+  // hypotenuse label
+  const ax=p.X(A.x),ay=p.Y(A.y),bx=p.X(B.x),by=p.Y(B.y),mx=(ax+bx)/2,my=(ay+by)/2;
+  let nx=-(by-ay),ny=bx-ax;const L=Math.hypot(nx,ny)||1;nx/=L;ny/=L;
+  const toC=[p.X(cx)-mx,p.Y(cy)-my];if(nx*toC[0]+ny*toC[1]>0){nx=-nx;ny=-ny}
+  txt(p,st1.shown>=5?`d ≈ ${num(d)}`:'d',mx+nx*p.fs*1.6,my+ny*p.fs*1.6,'#8a1538');
+  for(const q of [A,B]){
+    dot(p,q.x,q.y,q.col);
+    txt(p,`${q.n}(${num(q.x)} , ${num(q.y)})`,p.X(q.x),p.Y(q.y)+(q.y>=cy&&q===B||q.y>B.y?-1:1)*p.fs*1.5,q.col);
+  }
+};
+drag(p1,()=>[A,B],(q,x,y)=>{
+  const st=$('#snap1').checked?1:0.1;
+  q.x=clamp(r1(Math.round(x/st)*st),-7,7);q.y=clamp(r1(Math.round(y/st)*st),-7,7);
+  st1.render();
+});
+st1.render();
+$('#snap1').onchange=()=>{if($('#snap1').checked){for(const q of [A,B]){q.x=Math.round(q.x);q.y=Math.round(q.y)}st1.render()}};
+
+/* ================= 2: ball game ================= */
+const T={x:1,y:2};
+const PL=[
+  {id:'h1',n:'كرة حمزة الأولى',x:4,y:3,col:'#e8710a',on:false},
+  {id:'o', n:'كرة عثمان',x:-1,y:0,col:'#7b2cbf',on:false},
+  {id:'h2',n:'كرة حمزة الثانية',x:-2,y:1,col:'#c2185b',on:false}
+];
+const p2=new Plane($('#c2'),-3,6);planes[1]=p2;
+p2.draw=p=>{
+  for(const q of PL)if(q.on)line(p,q.x,q.y,T.x,T.y,q.col,4,[9,6]);
+  dot(p,T.x,T.y,'#0b7ac7',Math.max(8,p.S/55));
+  txt(p,'كرة الهدف (1 , 2)',p.X(T.x),p.Y(T.y)-p.fs*1.6,'#0b7ac7');
+  for(const q of PL){
+    dot(p,q.x,q.y,q.col);
+    txt(p,`${q.n}`,p.X(q.x),p.Y(q.y)+p.fs*1.5,q.col);
+  }
+};
+function calc2(){
+  $('#calc2').innerHTML=PL.filter(q=>q.on).map(q=>{
+    const dx=T.x-q.x,dy=T.y-q.y,n=dx*dx+dy*dy;
+    return `<div class="calc" style="border-color:${q.col}"><b style="color:${q.col}">${q.n}</b> <span class="m">(${num(q.x)} , ${num(q.y)})</span>
+    <div class="mline" style="font-size:1.15em">d² = (${num(T.x)} − ${par(q.x)})² + (${num(T.y)} − ${par(q.y)})² = ${par(dx)}² + ${par(dy)}² = ${dx*dx} + ${dy*dy} = ${n}</div>
+    <div class="mline" style="font-size:1.15em">d = ${rt(n)} ≈ ${num(Math.sqrt(n))} قدم</div></div>`;
+  }).join('');
+}
+document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{
+  const q=PL.find(x=>x.id===b.dataset.p);q.on=!q.on;b.setAttribute('aria-pressed',q.on);calc2();p2.render();
+});
+choices($('#o2a'),[
+  {html:'نعم، حسابه صحيح والمسافة 4 قدم.',ok:false,why:'قارن مع حساب البعد الصحيح: اضغط على «كرة عثمان» في الأعلى لترى أن d ≈ 2.8 قدم.'},
+  {html:'لا، أخذ الجذر لكل حدّ على حدة؛ والصحيح جمع المربعين أولاً ثم أخذ الجذر.',ok:true,why:'<span class="m">√(a² + b²) ≠ √a² + √b²</span>. الصحيح: <span class="m">√(2² + 2²) = √8 ≈ 2.8</span> قدم.'},
+  {html:'لا، لأنه رتّب الإحداثيات بشكل خاطئ في الطرح.',ok:false,why:'ترتيب الطرح لا يؤثر هنا لأن الفرق يُربَّع، فتبقى النتيجة نفسها. الخطأ في فصل الجذرين.'}
+],$('#f2a'));
+choices($('#o2b'),[
+  {html:'نعم، ما زال عثمان متقدّماً.',ok:true,why:'كرة حمزة الثانية تبعد <span class="m">√10 ≈ 3.2</span> قدم عن الهدف، وكرة عثمان تبعد <span class="m">√8 ≈ 2.8</span> قدم، وكلما قلّت المسافة كان اللاعب أقرب إلى الفوز.'},
+  {html:'لا، أصبح حمزة هو المتقدّم.',ok:false,why:'احسب البعدين: <span class="m">√10 ≈ 3.2</span> لحمزة مقابل <span class="m">√8 ≈ 2.8</span> لعثمان، فالمسافة الأصغر لعثمان.'}
+],$('#f2b'));
+
+/* ================= 3: circle ================= */
+const C={h:2,k:-1,r:3};
+const P={t:0.61},Q={x:5,y:2};
+const p3=new Plane($("#c3"),-8,8);planes[2]=p3;
+const Ppt=()=>({x:C.h+C.r*Math.cos(P.t),y:C.k+C.r*Math.sin(P.t)});
+const Pobj={get x(){return Ppt().x},get y(){return Ppt().y}};
+const st3=Stepper($('#st3'),()=>{
+  const {h,k,r}=C,rr=num(r);
+  return [
+    `<b>التعريف:</b> الدائرة مجموعة النقاط التي تبعد <b>r</b> عن المركز <span class="m">M(h , k)</span>. هنا المركز <span class="m">M(${num(h)} , ${num(k)})</span> ونصف القطر <span class="m">r = ${rr}</span>.`,
+    `نأخذ أي نقطة <span class="m">P(x , y)</span> على الدائرة؛ بُعدها عن المركز يساوي r. نستخدم صيغة المسافة:<div class="mline">${rt(`(x − ${par(h)})² + (y − ${par(k)})²`)} = ${rr}</div>`,
+    `نربّع الطرفين لنتخلّص من الجذر:<div class="mline">(x − ${par(h)})² + (y − ${par(k)})² = ${rr}²</div>`,
+    `نبسّط الإشارات (طرح عدد سالب = جمع):<div class="big">${eqHTML(h,k,num(r*r))}</div>هذه هي <b>الصيغة القياسية</b> لمعادلة الدائرة: <span class="m">(x − h)² + (y − k)² = r²</span>.`
+  ];
+},{next:$('#n3'),all:$('#a3'),reset:$('#r3')},()=>{});
+function upd3(){
+  $('#ho').textContent=num(C.h);$('#ko').textContent=num(C.k);$('#ro').textContent=num(C.r);
+  $('#eq3').innerHTML=eqHTML(C.h,C.k,`${num(C.r)}² = ${num(C.r*C.r)}`);
+  st3.render();
+  const p=Ppt(),dx=p.x-C.h,dy=p.y-C.k;
+  $('#p3').innerHTML=`<span class="m">P(${num(p.x)} , ${num(p.y)})</span>
+    <div class="mline" style="font-size:1.1em">(${num(p.x)} − ${par(C.h)})² + (${num(p.y)} − ${par(C.k)})² ≈ ${num(dx*dx)} + ${num(dy*dy)} ≈ ${num(C.r*C.r)} = r²</div>`;
+  const d2=Math.round(((Q.x-C.h)**2+(Q.y-C.k)**2)*100)/100,r2=Math.round(C.r*C.r*100)/100;
+  const cmp=Math.abs(d2-r2)<0.005?['=','تساوي','<b style="color:var(--good)">على الدائرة</b>']:d2<r2?['<','أصغر من','<b style="color:var(--maroon)">داخل الدائرة</b>']:['>','أكبر من','<b style="color:var(--blue)">خارج الدائرة</b>'];
+  $('#q3').innerHTML=`<span class="m">Q(${num(Q.x)} , ${num(Q.y)})</span>
+    <div class="mline" style="font-size:1.1em">(${num(Q.x)} − ${par(C.h)})² + (${num(Q.y)} − ${par(C.k)})² = ${num(d2)} ${cmp[0]} ${num(r2)}</div>
+    المجموع ${cmp[1]} r² ⇐ النقطة Q ${cmp[2]}.`;
+  p3.render();
+}
+p3.draw=p=>{
+  const c=p.ctx,{h,k,r}=C,pp=Ppt();
+  c.beginPath();c.arc(p.X(h),p.Y(k),r*p.u,0,Math.PI*2);
+  c.fillStyle='rgba(138,21,56,.08)';c.fill();c.strokeStyle='#8a1538';c.lineWidth=4;c.stroke();
+  const dx=pp.x-h,dy=pp.y-k;
+  if(Math.abs(dx)>0.05)line(p,h,k,pp.x,k,'#e8710a',3,[7,5]);
+  if(Math.abs(dy)>0.05)line(p,pp.x,k,pp.x,pp.y,'#0f8a6d',3,[7,5]);
+  line(p,h,k,pp.x,pp.y,'#8a1538',3);
+  if(Math.abs(dx)>0.8)txt(p,`|x − ${par(h)}|`.replace('− (','− ('),p.X((h+pp.x)/2),p.Y(k)+(dy>=0?1:-1)*p.fs*1.3,'#b85400');
+  if(Math.abs(dy)>0.8)txt(p,`|y − ${par(k)}|`,p.X(pp.x)+(dx>=0?1:-1)*p.fs*2.3,p.Y((k+pp.y)/2),'#0a6b54');
+  txt(p,`r = ${num(r)}`,p.X((h+pp.x)/2)+(dx>=0?-1:1)*p.fs*0.4,p.Y((k+pp.y)/2)+(dy>=0?-1:1)*p.fs*1.2,'#8a1538');
+  dot(p,h,k,'#333',Math.max(5,p.S/90));
+  txt(p,`M(${num(h)} , ${num(k)})`,p.X(h),p.Y(k)+(Math.abs(dy)<1?-1:1)*p.fs*1.6,'#333');
+  dot(p,pp.x,pp.y,'#8a1538');
+  txt(p,`P(${num(pp.x)} , ${num(pp.y)})`,p.X(pp.x)+(dx>=0?1:-1)*0,p.Y(pp.y)+(dy>=0?-1:1)*p.fs*1.6,'#8a1538');
+  dot(p,Q.x,Q.y,'#0f8a6d');
+  txt(p,`Q(${num(Q.x)} , ${num(Q.y)})`,p.X(Q.x),p.Y(Q.y)-p.fs*1.6,'#0f8a6d');
+};
+drag(p3,()=>[Pobj,Q],(q,x,y)=>{
+  if(q===Pobj){let t=Math.atan2(y-C.k,x-C.h);const s=Math.PI/36;P.t=Math.round(t/s)*s}
+  else{Q.x=clamp(Math.round(x),-7,7);Q.y=clamp(Math.round(y),-7,7)}
+  upd3();
+});
+['h','k','r'].forEach(id=>$('#'+id).oninput=e=>{C[id]=+e.target.value;upd3()});
+document.querySelectorAll('[data-pre]').forEach(b=>b.onclick=()=>{
+  const [h,k,r]=b.dataset.pre.split(',').map(Number);
+  C.h=h;C.k=k;C.r=r;$('#h').value=h;$('#k').value=k;$('#r').value=r;upd3();
+});
+upd3();
+
+/* ================= 4: practice ================= */
+const p4=new Plane($('#c4'),-9,9);planes[3]=p4;
+let cur4=null,ok4=0,tot4=0,shown4=false;
+p4.draw=p=>{
+  if(!cur4||!shown4)return;
+  const {h,k,r}=cur4,c=p.ctx;
+  c.beginPath();c.arc(p.X(h),p.Y(k),r*p.u,0,Math.PI*2);c.fillStyle='rgba(138,21,56,.08)';c.fill();
+  c.strokeStyle='#8a1538';c.lineWidth=4;c.stroke();
+  line(p,h,k,h+r,k,'#e8710a',3,[7,5]);
+  dot(p,h,k,'#333',Math.max(5,p.S/90));
+  txt(p,`M(${num(h)} , ${num(k)})`,p.X(h),p.Y(k)+p.fs*1.6,'#333');
+  txt(p,`r = ${num(r)}`,p.X(h+r/2),p.Y(k)-p.fs*1.2,'#b85400');
+};
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+function newQ(){
+  let h,k;do{h=rnd(-5,5);k=rnd(-5,5)}while(!h||!k||h===k||Math.abs(h)===Math.abs(k));
+  const r=rnd(2,4),r2=r*r,type=rnd(0,1);
+  cur4={h,k,r};shown4=false;
+  const cen=(a,b)=>`(${num(a)} , ${num(b)})`;
+  let opts;
+  if(type===0){
+    $('#q4t').innerHTML=`اكتب معادلة الدائرة التي مركزها <span class="m">${cen(h,k)}</span> ونصف قطرها <span class="m">${r}</span>:`;
+    $('#q4m').innerHTML='';
+    const why=`الصيغة <span class="m">(x − h)² + (y − k)² = r²</span> مع <span class="m">h = ${num(h)}</span> و <span class="m">k = ${num(k)}</span> و <span class="m">r² = ${r}² = ${r2}</span> فتصبح ${eqHTML(h,k,r2)}.`;
+    opts=[
+      {html:eqHTML(h,k,r2),ok:true,why},
+      {html:eqHTML(-h,-k,r2),ok:false,why:'أخطأت في الإشارة: المعادلة تحوي <span class="m">x − h</span>، فإذا كان h سالباً صارت <span class="m">x +</span>. '+why},
+      {html:eqHTML(h,k,r),ok:false,why:'الطرف الأيمن هو <b>r²</b> وليس r. '+why},
+      {html:eqHTML(k,h,r2),ok:false,why:'إحداثي س (h) يذهب مع x، وإحداثي ص (k) يذهب مع y. '+why}
+    ];
+  }else{
+    $('#q4t').innerHTML='ما مركز الدائرة ونصف قطرها في المعادلة الآتية؟';
+    $('#q4m').innerHTML=eqHTML(h,k,r2);
+    const why=`بمقارنتها بـ <span class="m">(x − h)² + (y − k)² = r²</span>: <span class="m">h = ${num(h)}</span> و <span class="m">k = ${num(k)}</span> و <span class="m">r = √${r2} = ${r}</span>.`;
+    const o=(a,b,R)=>`المركز <span class="m">${cen(a,b)}</span> ونصف القطر <span class="m">${R}</span>`;
+    opts=[
+      {html:o(h,k,r),ok:true,why},
+      {html:o(-h,-k,r),ok:false,why:'انتبه للإشارة: <span class="m">(x + 4)</span> تعني <span class="m">x − (−4)</span> فالإحداثي −4 وليس 4. '+why},
+      {html:o(h,k,r2),ok:false,why:'الطرف الأيمن هو r² فنصف القطر جذره التربيعي. '+why},
+      {html:o(k,h,r),ok:false,why:'الحد الأول في x والثاني في y، فلا تبدّل ترتيب الإحداثيين. '+why}
+    ];
+  }
+  choices($('#o4'),shuffle(opts),$('#f4'),ok=>{tot4++;if(ok)ok4++;shown4=true;$('#score4').textContent=`الإجابات الصحيحة: ${ok4} من ${tot4}`;p4.render()});
+  p4.render();
+}
+$('#nq4').onclick=newQ;newQ();
+
+planes.forEach(p=>p.resize());
+</script>
+</body>
+</html>
